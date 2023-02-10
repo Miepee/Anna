@@ -54,8 +54,8 @@ namespace AnnaGUI
 		private const string toolFile = "_AnnaTool.txt";
 		private const string originalOption = "Original";
 		private const string packMusicFolder = "Music";
-		private const string packPalettesFolder = "Palettes";
-		private const string packLangFolder = "Languages";
+		private const string packPalettesFolder = "Palette";
+		private const string packLangFolder = "Language";
 
 		private bool unsavedProgress;
 	
