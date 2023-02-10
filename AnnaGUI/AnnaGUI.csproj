@@ -1,17 +1,29 @@
-﻿<Project Sdk="Eto.Forms/2.7.2">
-
-  <!--
-    Set the BuildPlatform property to the Eto platform you wish to build for.
-    The default is the platform you are building on.
-    Valid values: Wpf, Windows, Mac64, XamMac2, Gtk, Direct2D
-  -->
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <OutputType>Library</OutputType>
-
+    <LangVersion>10</LangVersion>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Eto.Forms" Version="2.7.2" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\AnnaLib\AnnaLib.csproj" />
   </ItemGroup>
