@@ -3,7 +3,7 @@ Anna (**A**M2R-tool for **N**ew and **N**ovel **A**ssets) is essentially a resou
 The tool lets you change Music, Language and Palette files in a straight forward way, without needing to deal with copying profiles back and forth or needing to create seperate modpacks for each profile you want certain resources to be changed.
 
 
-Anna loads its resource packs from .apa files (**A**set **P**acks for **A**nna), which are just renamed zip files. Here's how an example file could look like:
+Anna loads its resource packs from .apa files (**A**sset **P**acks for **A**nna), which are just renamed zip files. Here's how an example file could look like:
 ```
 MyCoolResourcePack.apa
 |- Music
