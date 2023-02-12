@@ -509,7 +509,7 @@ namespace AnnaGUI
 
 		private void ScanConfigForPacks()
 		{
-			Directory.Create(configFolder + "/Packs");
+			Directory.CreateDirectory(configFolder + "/Packs");
 			packDropdown.DataStore = new DirectoryInfo(configFolder + "/Packs").GetDirectories().Where(d => d.GetDirectories().Length != 0).Select(d => d.Name).OrderBy(d => d);
 		}
 	}
