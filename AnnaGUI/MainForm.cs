@@ -15,11 +15,12 @@ namespace AnnaGUI
 	// TODO: eventually split part stuff into a lib
 	public partial class MainForm : Form
 	{
-		private string configFolder => CreateAndReturnConfigPath();
+		private string configFolder => CreateAndReturnPath(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/AnnaTool");
 	
-		private static string CreateAndReturnConfigPath()
+		private string packFolder => CreateAndReturnPath(configFolder + "/Packs");
+		
+		private static string CreateAndReturnPath(string path)
 		{
-			string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/AnnaTool";
 			Directory.CreateDirectory(path);
 			return path;
 		}
@@ -138,7 +139,7 @@ namespace AnnaGUI
             List<object> palettesList = new List<object> { originalOption };
             List<object> musicList = new List<object> { originalOption };
             List<object> languagesList = new List<object> { originalOption };
-            foreach (DirectoryInfo packDir in new DirectoryInfo(configFolder + "/Packs").GetDirectories())
+            foreach (DirectoryInfo packDir in new DirectoryInfo(packFolder).GetDirectories())
             {
 	            foreach (var assetDir in packDir.GetDirectories())
 	            {
@@ -230,13 +231,13 @@ namespace AnnaGUI
 	            if (currentMusic != originalOption)
 	            {
 		            // we only want to copy oggs, as otherwise people might place palette/lang/data.win files into the music place and do conflicting stuff
-		            foreach (var file in new DirectoryInfo(configFolder + "/Packs/" + currentMusic + "/" + packMusicFolder).GetFiles().Where(f => f.Extension == ".ogg"))
+		            foreach (var file in new DirectoryInfo(packFolder + "/" + currentMusic + "/" + packMusicFolder).GetFiles().Where(f => f.Extension == ".ogg"))
 			            file.CopyTo(assetPath + "/" + file.Name, true);
 	            }
 	            else
 	            {
 		            // first delete everything from the pack, then move old assets back in
-		            DeleteLeftoverAssets(configFolder + "/Packs/" + currentProfile.Music + "/" + packMusicFolder, origDataPath, assetPath);
+		            DeleteLeftoverAssets(packFolder + "/" + currentProfile.Music + "/" + packMusicFolder, origDataPath, assetPath);
 
 		            // Because music is fun, we first need to use 1.1's music, and then the one from the profile
 		            // This will cause different files if one had HQ music installed earlier, but I dont care for that rn
@@ -277,12 +278,12 @@ namespace AnnaGUI
             {
 	            if (currentPalette != originalOption)
 	            {
-		            DirectoryCopy(configFolder + "/Packs/" + currentPalette + "/" + packPalettesFolder, assetPath + "/mods/palettes");
+		            DirectoryCopy(packFolder + "/" + currentPalette + "/" + packPalettesFolder, assetPath + "/mods/palettes");
 	            }
 	            else
 	            {
 		            // first delete everything from the pack, then move old assets back in
-		            DeleteLeftoverAssets(configFolder + "/Packs/" + currentProfile.Palette + "/" + packPalettesFolder, origDataPath + "/mods/palettes", assetPath + "/mods/palettes");
+		            DeleteLeftoverAssets(packFolder + "/" + currentProfile.Palette + "/" + packPalettesFolder, origDataPath + "/mods/palettes", assetPath + "/mods/palettes");
 
 		            DirectoryCopy(origDataPath + "/mods/palettes", assetPath + "/mods/palettes");
 	            }
@@ -293,12 +294,12 @@ namespace AnnaGUI
             {
 	            if (currentLang != originalOption)
 	            {
-		            DirectoryCopy(configFolder + "/Packs/" + currentLang + "/" + packLangFolder, assetPath + "/lang");
+		            DirectoryCopy(packFolder + "/" + currentLang + "/" + packLangFolder, assetPath + "/lang");
 	            }
 	            else
 	            {
 		            // first delete everything from the pack, then move old assets back in
-		            DeleteLeftoverAssets(configFolder + "/Packs/" + currentProfile.Language + "/" + packLangFolder, origDataPath + "/lang", assetPath + "/lang");
+		            DeleteLeftoverAssets(packFolder + "/" + currentProfile.Language + "/" + packLangFolder, origDataPath + "/lang", assetPath + "/lang");
 		            DirectoryCopy(origDataPath + "/lang", assetPath + "/lang");
 	            }
             }
@@ -462,7 +463,7 @@ namespace AnnaGUI
 			if (picker.ShowDialog(this) != DialogResult.Ok)
 				return;
 
-			if (Directory.Exists(configFolder + "/Packs/" + Path.GetFileNameWithoutExtension(picker.FileName)))
+			if (Directory.Exists(packFolder + "/" + Path.GetFileNameWithoutExtension(picker.FileName)))
 			{
 				Application.Instance.Invoke(() =>
 				{
@@ -470,8 +471,8 @@ namespace AnnaGUI
 				});
 				return;
 			}
-			ZipFile.ExtractToDirectory(picker.FileName, configFolder + "/Packs/" + Path.GetFileNameWithoutExtension(picker.FileName));
-			LowercaseFolder(configFolder + "/Packs/" + Path.GetFileNameWithoutExtension(picker.FileName));
+			ZipFile.ExtractToDirectory(picker.FileName, packFolder + "/" + Path.GetFileNameWithoutExtension(picker.FileName));
+			if (OS.IsUnix) LowercaseFolder(packFolder + "/" + Path.GetFileNameWithoutExtension(picker.FileName));
 			
 			ScanConfigForPacks();
 		}
@@ -482,10 +483,10 @@ namespace AnnaGUI
 			if (picker.ShowDialog(this) != DialogResult.Ok)
 				return;
 
-			var name = packDropdown.SelectedKey;
+			string name = packDropdown.SelectedKey;
 			int index = packDropdown.SelectedIndex;
-			Directory.Delete(configFolder + "/Packs/" + packDropdown.SelectedKey, true);
-			ZipFile.ExtractToDirectory(picker.FileName, configFolder + "/Packs/" + name);
+			Directory.Delete(packFolder + "/" + packDropdown.SelectedKey, true);
+			ZipFile.ExtractToDirectory(picker.FileName, packFolder + "/" + name);
 			packDropdown.SelectedIndex = index;
 			
 			ScanConfigForPacks();
@@ -500,7 +501,7 @@ namespace AnnaGUI
 			if (result != DialogResult.Yes)
 				return;
 			
-			Directory.Delete(configFolder + "/Packs/" + packDropdown.SelectedKey, true);
+			Directory.Delete(packFolder + "/" + packDropdown.SelectedKey, true);
 			packDropdown.SelectedIndex = -1;
 			ScanConfigForPacks();
 			if (packDropdown.DataStore.Any())
@@ -509,8 +510,7 @@ namespace AnnaGUI
 
 		private void ScanConfigForPacks()
 		{
-			Directory.CreateDirectory(configFolder + "/Packs");
-			packDropdown.DataStore = new DirectoryInfo(configFolder + "/Packs").GetDirectories().Where(d => d.GetDirectories().Length != 0).Select(d => d.Name).OrderBy(d => d);
+			packDropdown.DataStore = new DirectoryInfo(packFolder).GetDirectories().Where(d => d.GetDirectories().Length != 0).Select(d => d.Name).OrderBy(d => d);
 		}
 	}
 }
